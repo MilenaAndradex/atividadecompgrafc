@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Computação Gráfica</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        //inicialização da cena
+        const cena = new THREE.Scene();
+        cena.background = new THREE.Color(0x222222);
+        
+        //configuração da câmera
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5, 5, 5);
+        
+        //renderizador
+        const renderizador = new THREE.WebGLRenderer({ antialias: true });
+        renderizador.setSize(window.innerWidth, window.innerHeight);
+        renderizador.shadowMap.enabled = true;
+        document.body.appendChild(renderizador.domElement);
+        
+        //controles da câmera
+        const controlesCamera = new THREE.OrbitControls(camera, renderizador.domElement);
+        controlesCamera.enableDamping = true;
+        controlesCamera.dampingFactor = 0.05;
+        
+        //adicionando luzes
+        const luzAmbiente = new THREE.AmbientLight(0x404040);
+        cena.add(luzAmbiente);
+        
+        const luzDirecional = new THREE.DirectionalLight(0xffffff, 0.8);
+        luzDirecional.position.set(1, 1, 1);
+        luzDirecional.castShadow = true;
+        cena.add(luzDirecional);
+        
+        //cubo
+        const geometriaCubo = new THREE.BoxGeometry(1, 1, 1);
+        const materialCubo = new THREE.MeshPhongMaterial({ 
+            color: 0xffb6c1,
+            shininess: 100
+        });
+        const cubo = new THREE.Mesh(geometriaCubo, materialCubo);
+        cubo.position.set(-2, 0.5, 0);
+        cubo.castShadow = true;
+        cena.add(cubo);
+        
+        //esfera
+        const geometriaEsfera = new THREE.SphereGeometry(0.8, 32, 32);
+        const materialEsfera = new THREE.MeshPhongMaterial({ 
+            color: 0xc8a2c8,
+            shininess: 50
+        });
+        const esfera = new THREE.Mesh(geometriaEsfera, materialEsfera);
+        esfera.position.set(2, 0.8, -1);
+        esfera.castShadow = true;
+        cena.add(esfera);
+        
+        //cilindro com textura
+        const carregadorTextura = new THREE.TextureLoader();
+        const texturaCilindro = carregadorTextura.load('https://threejs.org/examples/textures/hardwood2_diffuse.jpg');
+
+        const geometriaCilindro = new THREE.CylinderGeometry(0.6, 0.6, 1.5, 32);
+        const materialCilindro = new THREE.MeshPhongMaterial({ 
+            map: texturaCilindro,
+            shininess: 30
+        });
+        const cilindro = new THREE.Mesh(geometriaCilindro, materialCilindro);
+        cilindro.position.set(0, 0.75, 2);
+        cilindro.castShadow = true;
+        cena.add(cilindro);
+        
+        //animação e transformações
+        function animar() {
+            requestAnimationFrame(animar);
+            
+            //rotação no cubo
+            cubo.rotation.y += 0.01;
+            
+            //translação na esfera
+            esfera.position.y = 0.8 + Math.sin(Date.now() * 0.001) * 0.5;
+            
+            //escala no cilindro
+            const escala = 1 + Math.sin(Date.now() * 0.002) * 0.2;
+            cilindro.scale.set(escala, escala, escala);
+            
+            //atualiza os controles da câmera
+            controlesCamera.update();
+            
+            renderizador.render(cena, camera);
+        }
+        
+        //tratamento de redimensionamento da janela
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderizador.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        animar();
+    </script>
+</body>
+</html>
